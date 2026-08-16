@@ -295,12 +295,12 @@ export default function TutorialBubbleTour({
   return (
     <div
       id="tour-spotlight-overlay"
-      className="fixed inset-0 z-50 overflow-hidden select-none"
+      className="fixed inset-0 z-[9999] overflow-hidden select-none"
     >
       {/* 1. DARK SCREEN WITH CIRCLE HOLE (SVG MASK SPOTLIGHT) */}
       <svg
         className="fixed inset-0 w-full h-full pointer-events-none transition-all duration-300 ease-out"
-        style={{ zIndex: 45 }}
+        style={{ zIndex: 9990 }}
       >
         <defs>
           <mask id="spotlight-cutout-mask">
@@ -341,7 +341,7 @@ export default function TutorialBubbleTour({
             top: `${spotlightPos.y - spotlightPos.radius}px`,
             width: `${spotlightPos.radius * 2}px`,
             height: `${spotlightPos.radius * 2}px`,
-            zIndex: 48,
+            zIndex: 9995,
           }}
           title="Click this glowing circle to continue!"
         >
@@ -369,7 +369,7 @@ export default function TutorialBubbleTour({
           {/* Floating animated hand icon pointing to click */}
           <div
             className="absolute -bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 pointer-events-none animate-bounce"
-            style={{ zIndex: 50 }}
+            style={{ zIndex: 9998 }}
           >
             <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(255,230,0,0.8)]">
               👆
@@ -385,7 +385,7 @@ export default function TutorialBubbleTour({
       )}
 
       {/* 3. TOP SIMPLE BAR (STEP COUNTER & EASY EXIT) */}
-      <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md bg-[#16112B]/95 border border-[#FFE600]/40 rounded-2xl px-3.5 py-2 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2">
+      <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[9999] w-11/12 max-w-md bg-[#16112B]/95 border border-[#FFE600]/40 rounded-2xl px-3.5 py-2 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-lg animate-bounce">{currentStep.emoji}</span>
           <div className="flex flex-col">

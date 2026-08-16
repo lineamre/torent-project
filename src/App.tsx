@@ -38,7 +38,7 @@ import confetti from 'canvas-confetti';
 const STORAGE_KEY_JOURNAL = 'neo_arcana_tarot_journal';
 const STORAGE_KEY_THEME = 'neo_arcana_tarot_theme';
 const STORAGE_KEY_LANG = 'neo_arcana_tarot_lang';
-const STORAGE_KEY_TUTORIAL = 'neo_arcana_tarot_tutorial_completed_v1';
+const STORAGE_KEY_WELCOME_DISMISSED = 'neo_arcana_tarot_welcome_dismissed_v4';
 
 export default function App() {
   const { user, userProfile, updateUserPreferences } = useAuth();
@@ -51,11 +51,27 @@ export default function App() {
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [guideModalInitialStep, setGuideModalInitialStep] = useState<number>(1);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(() => {
-    return !localStorage.getItem(STORAGE_KEY_TUTORIAL);
+    try {
+      return localStorage.getItem(STORAGE_KEY_WELCOME_DISMISSED) !== 'true';
+    } catch {
+      return true;
+    }
   });
   const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
+  // Ensure welcome modal pops out for new users upon initial mount
+  useEffect(() => {
+    try {
+      const isDismissed = localStorage.getItem(STORAGE_KEY_WELCOME_DISMISSED) === 'true';
+      if (!isDismissed) {
+        setIsWelcomeModalOpen(true);
+      }
+    } catch {
+      setIsWelcomeModalOpen(true);
+    }
+  }, []);
 
   // Language State ('en' | 'tl')
   const [appLanguage, setAppLanguage] = useState<AppLanguage>(() => {
@@ -477,7 +493,7 @@ export default function App() {
             setGuideModalInitialStep(dealtCards.length === 0 ? 1 : !allCardsRevealed ? 4 : 5);
             setIsGuideModalOpen(true);
           }}
-          onOpenTutorial={() => setIsTutorialOpen(true)}
+          onOpenTutorial={() => setIsWelcomeModalOpen(true)}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}
           onOpenProfileModal={() => setIsProfileModalOpen(true)}
         />
@@ -487,66 +503,54 @@ export default function App() {
           {/* Tab 1: Divination Spread */}
           {activeTab === 'reading' && (
             <main className="flex flex-col gap-4 animate-in fade-in duration-200">
-              {!user ? (
-                <DivinationLoginGate
-                  onExploreCards={() => setActiveTab('explorer')}
-                  onOpenGuideModal={() => {
-                    setGuideModalInitialStep(1);
-                    setIsGuideModalOpen(true);
-                  }}
-                />
-              ) : (
-                <>
-                  <SpreadBoard
-                    currentSpread={currentSpread}
-                    onSelectSpread={(spread) => {
-                      setCurrentSpread(spread);
-                      setDealtCards([]);
-                      setAiInterpretation('');
-                      setPopoutCardIndex(null);
-                      setIsFullReadingPopoutOpen(false);
-                    }}
-                    readingFocus={readingFocus}
-                    onSelectFocus={handleSelectFocus}
-                    question={question}
-                    onQuestionChange={setQuestion}
-                    dealtCards={dealtCards}
-                    isShuffling={isShuffling}
-                    onShuffleAndDeal={handleShuffleAndDeal}
-                    onFlipCard={handleFlipCard}
-                    onFlipAll={handleFlipAll}
-                    onInspectCard={(item) =>
-                      setInspectedCard({ card: item.card, isReversed: item.isReversed })
-                    }
-                    onOpenPopoutCard={(idx) => setPopoutCardIndex(idx)}
-                    onOpenFullPopout={() => setIsFullReadingPopoutOpen(true)}
-                    hasAiInterpretation={!!aiInterpretation}
-                    onOpenGuideModal={(step) => {
-                      if (step) setGuideModalInitialStep(step);
-                      setIsGuideModalOpen(true);
-                    }}
-                    onOpenTutorial={() => setIsTutorialOpen(true)}
-                    deckTheme={deckTheme}
-                  />
+              <SpreadBoard
+                currentSpread={currentSpread}
+                onSelectSpread={(spread) => {
+                  setCurrentSpread(spread);
+                  setDealtCards([]);
+                  setAiInterpretation('');
+                  setPopoutCardIndex(null);
+                  setIsFullReadingPopoutOpen(false);
+                }}
+                readingFocus={readingFocus}
+                onSelectFocus={handleSelectFocus}
+                question={question}
+                onQuestionChange={setQuestion}
+                dealtCards={dealtCards}
+                isShuffling={isShuffling}
+                onShuffleAndDeal={handleShuffleAndDeal}
+                onFlipCard={handleFlipCard}
+                onFlipAll={handleFlipAll}
+                onInspectCard={(item) =>
+                  setInspectedCard({ card: item.card, isReversed: item.isReversed })
+                }
+                onOpenPopoutCard={(idx) => setPopoutCardIndex(idx)}
+                onOpenFullPopout={() => setIsFullReadingPopoutOpen(true)}
+                hasAiInterpretation={!!aiInterpretation}
+                onOpenGuideModal={(step) => {
+                  if (step) setGuideModalInitialStep(step);
+                  setIsGuideModalOpen(true);
+                }}
+                onOpenTutorial={() => setIsWelcomeModalOpen(true)}
+                deckTheme={deckTheme}
+              />
 
-                  {/* If all cards are revealed or synthesis is available */}
-                  {allCardsRevealed && (
-                    <div className="px-3 sm:px-4">
-                      <ReadingInterpretation
-                        currentSpread={currentSpread}
-                        readingFocus={readingFocus}
-                        question={question}
-                        dealtCards={dealtCards}
-                        aiInterpretation={aiInterpretation}
-                        isLoadingAi={isLoadingAi}
-                        onSaveToJournal={handleSaveToJournal}
-                        isSaved={isCurrentReadingSaved}
-                        onReplayReading={handleShuffleAndDeal}
-                        onRegenerateAi={() => generateReadingSynthesis(dealtCards, question, readingFocus)}
-                      />
-                    </div>
-                  )}
-                </>
+              {/* If all cards are revealed or synthesis is available */}
+              {allCardsRevealed && (
+                <div className="px-3 sm:px-4">
+                  <ReadingInterpretation
+                    currentSpread={currentSpread}
+                    readingFocus={readingFocus}
+                    question={question}
+                    dealtCards={dealtCards}
+                    aiInterpretation={aiInterpretation}
+                    isLoadingAi={isLoadingAi}
+                    onSaveToJournal={handleSaveToJournal}
+                    isSaved={isCurrentReadingSaved}
+                    onReplayReading={handleShuffleAndDeal}
+                    onRegenerateAi={() => generateReadingSynthesis(dealtCards, question, readingFocus)}
+                  />
+                </div>
               )}
             </main>
           )}
@@ -721,7 +725,9 @@ export default function App() {
           setIsTutorialOpen(true);
         }}
         onSkipGuide={() => {
-          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          try {
+            localStorage.setItem(STORAGE_KEY_WELCOME_DISMISSED, 'true');
+          } catch {}
           setIsWelcomeModalOpen(false);
           setIsTutorialOpen(false);
         }}
@@ -733,11 +739,15 @@ export default function App() {
       <TutorialBubbleTour
         isOpen={isTutorialOpen}
         onClose={() => {
-          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          try {
+            localStorage.setItem(STORAGE_KEY_WELCOME_DISMISSED, 'true');
+          } catch {}
           setIsTutorialOpen(false);
         }}
         onComplete={() => {
-          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          try {
+            localStorage.setItem(STORAGE_KEY_WELCOME_DISMISSED, 'true');
+          } catch {}
           setIsTutorialOpen(false);
           sound.playCosmicChime();
           haptic.success();
