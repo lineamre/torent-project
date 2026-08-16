@@ -39,6 +39,7 @@ interface AndroidTopAppBarProps {
   isPhoneFrame: boolean;
   onTogglePhoneFrame: () => void;
   onOpenGuideModal?: () => void;
+  onOpenTutorial?: () => void;
   currentLanguage?: AppLanguage;
   onLanguageChange?: (lang: AppLanguage) => void;
   onOpenAuthModal: () => void;
@@ -58,6 +59,7 @@ export default function AndroidTopAppBar({
   isPhoneFrame,
   onTogglePhoneFrame,
   onOpenGuideModal,
+  onOpenTutorial,
   currentLanguage,
   onLanguageChange,
   onOpenAuthModal,
@@ -224,19 +226,19 @@ export default function AndroidTopAppBar({
             <span>{appLang === 'tl' ? '🇵🇭 TL' : '🇬🇧 EN'}</span>
           </button>
 
-          {/* Guide & Steps Quick Button */}
+          {/* Interactive Tutorial Tour Button */}
           <button
-            id="android-top-guide-btn"
+            id="android-top-tutorial-btn"
             onClick={() => {
               haptic.tick();
               sound.playDeal();
-              if (onOpenGuideModal) onOpenGuideModal();
+              if (onOpenTutorial) onOpenTutorial();
             }}
-            className="px-2.5 py-1.5 rounded-full bg-white/5 hover:bg-[#FFE600]/20 text-[#FFE600] hover:text-white border border-[#FFE600]/30 text-xs font-mono font-bold flex items-center gap-1.5 active:scale-90 transition-all"
-            title="Interactive Steps & Guide"
+            className="px-2.5 py-1.5 rounded-full bg-[#FFE600]/15 hover:bg-[#FFE600]/25 text-[#FFE600] border border-[#FFE600]/40 text-xs font-mono font-bold flex items-center gap-1.5 active:scale-90 transition-all shadow-[0_0_12px_rgba(255,230,0,0.2)]"
+            title="Interactive Pop-out Tutorial Walkthrough"
           >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Guide</span>
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+            <span className="hidden sm:inline">{appLang === 'tl' ? 'Gabay' : 'Tutorial'}</span>
           </button>
 
           {/* Daily Quick Launch */}
@@ -408,6 +410,19 @@ export default function AndroidTopAppBar({
                   </button>
                 )}
 
+                {/* Pop-out Tutorial Walkthrough */}
+                <button
+                  onClick={() => {
+                    haptic.tick();
+                    setShowOverflowMenu(false);
+                    if (onOpenTutorial) onOpenTutorial();
+                  }}
+                  className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-white/10 text-[#FFE600] hover:text-white flex items-center gap-2 transition-colors font-semibold"
+                >
+                  <Sparkles className="w-4 h-4 text-[#FFE600]" />
+                  <span>Interactive Pop-out Tutorial</span>
+                </button>
+
                 {/* Interactive Guide & Steps */}
                 <button
                   onClick={() => {
@@ -415,10 +430,10 @@ export default function AndroidTopAppBar({
                     setShowOverflowMenu(false);
                     if (onOpenGuideModal) onOpenGuideModal();
                   }}
-                  className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-white/10 text-[#FFE600] hover:text-white flex items-center gap-2 transition-colors font-semibold"
+                  className="w-full text-left px-3.5 py-2.5 rounded-2xl hover:bg-white/10 text-[#00F2FE] hover:text-white flex items-center gap-2 transition-colors font-semibold"
                 >
-                  <BookOpen className="w-4 h-4 text-[#FFE600]" />
-                  <span>Interactive Guide & Steps</span>
+                  <BookOpen className="w-4 h-4 text-[#00F2FE]" />
+                  <span>Oracle Lore & Spread Guide</span>
                 </button>
 
                 {/* Frame Toggle */}

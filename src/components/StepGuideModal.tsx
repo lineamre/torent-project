@@ -31,6 +31,7 @@ interface StepGuideModalProps {
   onFlipAll?: () => void;
   onFocusQuestion?: () => void;
   onTriggerVoice?: () => void;
+  onLaunchTour?: () => void;
 }
 
 export default function StepGuideModal({
@@ -42,6 +43,7 @@ export default function StepGuideModal({
   onFlipAll,
   onFocusQuestion,
   onTriggerVoice,
+  onLaunchTour,
 }: StepGuideModalProps) {
   const [activeTab, setActiveTab] = useState<'steps' | 'spreads' | 'wisdom' | 'voice'>('steps');
   const [selectedStep, setSelectedStep] = useState<number>(currentStepIndex || 1);
@@ -204,16 +206,34 @@ export default function StepGuideModal({
             </div>
           </div>
 
-          <button
-            id="close-step-guide-modal-btn"
-            onClick={() => {
-              haptic.tick();
-              onClose();
-            }}
-            className="p-2 rounded-2xl bg-white/5 hover:bg-white/15 text-[#9D94B8] hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onLaunchTour && (
+              <button
+                id="guide-modal-launch-bubble-tour-btn"
+                onClick={() => {
+                  haptic.tick();
+                  sound.playDeal();
+                  onClose();
+                  onLaunchTour();
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#FFE600] text-black font-mono font-bold text-xs shadow-[0_0_15px_rgba(255,230,0,0.3)] hover:bg-[#FFE600]/90 transition-all active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Interactive Bubble Tour</span>
+              </button>
+            )}
+
+            <button
+              id="close-step-guide-modal-btn"
+              onClick={() => {
+                haptic.tick();
+                onClose();
+              }}
+              className="p-2 rounded-2xl bg-white/5 hover:bg-white/15 text-[#9D94B8] hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation Chips */}

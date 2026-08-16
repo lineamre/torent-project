@@ -26,6 +26,8 @@ import DailyDrawModal from './components/DailyDrawModal';
 import CardReadingPopout from './components/CardReadingPopout';
 import FullReadingPopoutModal from './components/FullReadingPopoutModal';
 import StepGuideModal from './components/StepGuideModal';
+import TutorialBubbleTour from './components/TutorialBubbleTour';
+import NewUserWelcomeModal from './components/NewUserWelcomeModal';
 import AuthModal from './components/AuthModal';
 import UserProfileModal from './components/UserProfileModal';
 import { sound } from './utils/audio';
@@ -36,6 +38,7 @@ import confetti from 'canvas-confetti';
 const STORAGE_KEY_JOURNAL = 'neo_arcana_tarot_journal';
 const STORAGE_KEY_THEME = 'neo_arcana_tarot_theme';
 const STORAGE_KEY_LANG = 'neo_arcana_tarot_lang';
+const STORAGE_KEY_TUTORIAL = 'neo_arcana_tarot_tutorial_completed_v1';
 
 export default function App() {
   const { user, userProfile, updateUserPreferences } = useAuth();
@@ -47,6 +50,10 @@ export default function App() {
   const [isPhoneFrame, setIsPhoneFrame] = useState(false);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [guideModalInitialStep, setGuideModalInitialStep] = useState<number>(1);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState<boolean>(() => {
+    return !localStorage.getItem(STORAGE_KEY_TUTORIAL);
+  });
+  const [isTutorialOpen, setIsTutorialOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -470,6 +477,7 @@ export default function App() {
             setGuideModalInitialStep(dealtCards.length === 0 ? 1 : !allCardsRevealed ? 4 : 5);
             setIsGuideModalOpen(true);
           }}
+          onOpenTutorial={() => setIsTutorialOpen(true)}
           onOpenAuthModal={() => setIsAuthModalOpen(true)}
           onOpenProfileModal={() => setIsProfileModalOpen(true)}
         />
@@ -517,6 +525,7 @@ export default function App() {
                       if (step) setGuideModalInitialStep(step);
                       setIsGuideModalOpen(true);
                     }}
+                    onOpenTutorial={() => setIsTutorialOpen(true)}
                     deckTheme={deckTheme}
                   />
 
@@ -648,6 +657,7 @@ export default function App() {
         isOpen={isGuideModalOpen}
         onClose={() => setIsGuideModalOpen(false)}
         currentStepIndex={guideModalInitialStep}
+        onLaunchTour={() => setIsTutorialOpen(true)}
         onSelectSpread={(spread) => {
           setCurrentSpread(spread);
           setDealtCards([]);
@@ -701,6 +711,68 @@ export default function App() {
           document.body.appendChild(downloadAnchor);
           downloadAnchor.click();
           downloadAnchor.remove();
+        }}
+      />
+      {/* New User Welcome Pop-out Modal (How to Use Guide vs Skip) */}
+      <NewUserWelcomeModal
+        isOpen={isWelcomeModalOpen}
+        onStartGuide={() => {
+          setIsWelcomeModalOpen(false);
+          setIsTutorialOpen(true);
+        }}
+        onSkipGuide={() => {
+          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          setIsWelcomeModalOpen(false);
+          setIsTutorialOpen(false);
+        }}
+        appLanguage={appLanguage}
+        onLanguageChange={handleLanguageChange}
+      />
+
+      {/* Interactive Pop-out Bubble Walkthrough Tour */}
+      <TutorialBubbleTour
+        isOpen={isTutorialOpen}
+        onClose={() => {
+          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          setIsTutorialOpen(false);
+        }}
+        onComplete={() => {
+          localStorage.setItem(STORAGE_KEY_TUTORIAL, 'true');
+          setIsTutorialOpen(false);
+          sound.playCosmicChime();
+          haptic.success();
+          try {
+            confetti({
+              particleCount: 80,
+              spread: 75,
+              origin: { y: 0.6 },
+              colors: ['#FFE600', '#00F2FE', '#FF2A6D', '#A855F7'],
+            });
+          } catch {
+            // Ignore if canvas-confetti context is blocked
+          }
+        }}
+        appLanguage={appLanguage}
+        readingFocus={readingFocus}
+        onSelectFocus={handleSelectFocus}
+        onSelectSpreadSample={() => {
+          setCurrentSpread(SPREAD_CONFIGS[1]);
+        }}
+        onSetQuestionSample={() => {
+          setQuestion(getFocusById(readingFocus).defaultQuestions[0]);
+        }}
+        onShuffleAndDeal={() => {
+          handleShuffleAndDeal();
+        }}
+        onRevealSample={() => {
+          if (dealtCards.length > 0) {
+            handleFlipCard(0);
+          } else {
+            handleShuffleAndDeal();
+            setTimeout(() => {
+              handleFlipCard(0);
+            }, 600);
+          }
         }}
       />
     </div>

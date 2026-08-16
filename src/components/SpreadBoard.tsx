@@ -42,6 +42,7 @@ interface SpreadBoardProps {
   onOpenFullPopout?: () => void;
   hasAiInterpretation?: boolean;
   onOpenGuideModal?: (stepNumber?: number) => void;
+  onOpenTutorial?: () => void;
   deckTheme: DeckTheme;
 }
 
@@ -60,6 +61,7 @@ export default function SpreadBoard({
   onInspectCard,
   onOpenPopoutCard,
   onOpenFullPopout,
+  onOpenTutorial,
   deckTheme,
 }: SpreadBoardProps) {
   const [showPrompts, setShowPrompts] = useState(false);
@@ -100,16 +102,33 @@ export default function SpreadBoard({
               Color Reading Focus
             </span>
           </div>
-          <span
-            className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border"
-            style={{
-              color: activeFocusObj.colorHex,
-              backgroundColor: `${activeFocusObj.colorHex}20`,
-              borderColor: `${activeFocusObj.colorHex}50`,
-            }}
-          >
-            {activeFocusObj.colorName}: {activeFocusObj.name}
-          </span>
+          <div className="flex items-center gap-2">
+            {onOpenTutorial && (
+              <button
+                id="spreadboard-tutorial-pill-btn"
+                onClick={() => {
+                  haptic.tick();
+                  sound.playDeal();
+                  onOpenTutorial();
+                }}
+                className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#FFE600]/15 hover:bg-[#FFE600]/25 text-[#FFE600] border border-[#FFE600]/40 transition-all flex items-center gap-1 active:scale-95 shadow-sm"
+                title="Open Interactive Tutorial Tour"
+              >
+                <Sparkles className="w-2.5 h-2.5" />
+                <span>How to Use Guide</span>
+              </button>
+            )}
+            <span
+              className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border"
+              style={{
+                color: activeFocusObj.colorHex,
+                backgroundColor: `${activeFocusObj.colorHex}20`,
+                borderColor: `${activeFocusObj.colorHex}50`,
+              }}
+            >
+              {activeFocusObj.colorName}: {activeFocusObj.name}
+            </span>
+          </div>
         </div>
 
         {/* 4 Focus Category Cards */}
