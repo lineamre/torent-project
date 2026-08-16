@@ -67,6 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         errorMsg = 'Sign-in popup was closed before completing.';
       } else if (err.code === 'auth/popup-blocked') {
         errorMsg = 'Sign-in popup was blocked by your browser. Please allow popups for this site.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'your-site.netlify.app';
+        errorMsg = `Unauthorized Domain (${currentHost}): Please add "${currentHost}" to Firebase Console -> Authentication -> Settings -> Authorized Domains.`;
       } else if (err.message) {
         errorMsg = err.message;
       }

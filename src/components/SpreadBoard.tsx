@@ -2,7 +2,24 @@ import { useState, useRef } from 'react';
 import { SpreadConfig, DealtCard, DeckTheme, ReadingFocusId } from '../types';
 import { SPREAD_CONFIGS } from '../data/tarotDeck';
 import { READING_FOCUSES, getFocusById } from '../data/readingFocuses';
-import { Sparkles, Shuffle, Wand2, ArrowRight, Lightbulb, Zap, CheckCircle2, Heart, Compass, Shield, Coins, Eye } from 'lucide-react';
+import {
+  Sparkles,
+  Shuffle,
+  Wand2,
+  ArrowRight,
+  Lightbulb,
+  Zap,
+  CheckCircle2,
+  Heart,
+  Compass,
+  Shield,
+  Coins,
+  Hourglass,
+  Flame,
+  Boxes,
+  Layers,
+  Hexagon,
+} from 'lucide-react';
 import TarotCardView from './TarotCardView';
 import CardShuffleLoader from './CardShuffleLoader';
 import { sound } from '../utils/audio';
@@ -52,18 +69,23 @@ export default function SpreadBoard({
   const allFlipped = dealtCards.length > 0 && dealtCards.every((c) => c.isFlipped);
   const someFlipped = dealtCards.some((c) => c.isFlipped);
 
-  const getFocusIcon = (id: ReadingFocusId) => {
-    switch (id) {
-      case 'love':
-        return <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />;
-      case 'future':
-        return <Compass className="w-3.5 h-3.5 text-blue-400" />;
-      case 'life':
-        return <Shield className="w-3.5 h-3.5 text-zinc-300" />;
-      case 'fortune':
-        return <Coins className="w-3.5 h-3.5 text-amber-400" />;
+  const getSpreadIcon = (spreadId: string, cardCount: number) => {
+    switch (spreadId) {
+      case 'single':
+        return <Zap className="w-3.5 h-3.5" />;
+      case 'temporal':
+        return <Hourglass className="w-3.5 h-3.5" />;
+      case 'mind-body-spirit':
+        return <Flame className="w-3.5 h-3.5" />;
+      case 'hexagram-6':
+        return <Boxes className="w-3.5 h-3.5" />;
+      case 'celtic':
+        return <Layers className="w-3.5 h-3.5" />;
       default:
-        return <Sparkles className="w-3.5 h-3.5 text-[#FFE600]" />;
+        if (cardCount === 1) return <Zap className="w-3.5 h-3.5" />;
+        if (cardCount === 3) return <Hourglass className="w-3.5 h-3.5" />;
+        if (cardCount === 6) return <Hexagon className="w-3.5 h-3.5" />;
+        return <Wand2 className="w-3.5 h-3.5" />;
     }
   };
 
@@ -153,20 +175,27 @@ export default function SpreadBoard({
         </div>
       </div>
 
-      {/* 2. MATERIAL 3 SPREAD SELECTION FILTER CHIPS */}
+      {/* 2. SACRED SPREAD SELECTION (2ND TOP SECTION WITH WONDERFUL SPREAD ICONS) */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#F5F3FF] flex items-center gap-1.5">
             <Wand2 className="w-3.5 h-3.5" style={{ color: activeFocusObj.colorHex }} />
-            Sacred Layout
+            Sacred Layout Spreads (1, 3 & 6 Cards)
           </span>
-          <span className="text-[11px] text-[#9D94B8] font-mono">
-            {currentSpread.cardCount} {currentSpread.cardCount === 1 ? 'Card' : 'Cards'} Active
+          <span
+            className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full border"
+            style={{
+              color: activeFocusObj.colorHex,
+              backgroundColor: `${activeFocusObj.colorHex}15`,
+              borderColor: `${activeFocusObj.colorHex}40`,
+            }}
+          >
+            {currentSpread.cardCount} {currentSpread.cardCount === 1 ? 'Card' : 'Cards'} Selected
           </span>
         </div>
 
-        {/* Scrollable Material 3 Chips Container */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar scroll-smooth">
+        {/* Spread Selector Chips / Cards with Icons */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {SPREAD_CONFIGS.map((spread) => {
             const isActive = currentSpread.id === spread.id;
             return (
@@ -178,35 +207,55 @@ export default function SpreadBoard({
                   onSelectSpread(spread);
                   sound.playDeal();
                 }}
-                className={`flex-shrink-0 px-3.5 py-2 rounded-2xl text-xs font-semibold flex items-center gap-2 border transition-all active:scale-95 ${
+                className={`p-2.5 sm:p-3 rounded-2xl flex flex-col items-start gap-1.5 text-left border transition-all active:scale-95 ${
                   isActive
-                    ? 'font-bold shadow-lg'
-                    : 'bg-[#16112B]/80 text-[#D1CBE8] border-white/15 hover:bg-white/10'
+                    ? 'font-bold shadow-lg ring-1'
+                    : 'bg-[#16112B]/80 text-[#D1CBE8] border-white/15 hover:bg-white/10 hover:border-white/30'
                 }`}
                 style={
                   isActive
                     ? {
-                        backgroundColor: activeFocusObj.colorHex,
-                        color: readingFocus === 'life' ? '#ffffff' : '#080612',
+                        backgroundColor: `${activeFocusObj.colorHex}25`,
                         borderColor: activeFocusObj.colorHex,
-                        boxShadow: `0 0 20px ${activeFocusObj.colorHex}50`,
+                        boxShadow: `0 0 20px ${activeFocusObj.colorHex}40`,
                       }
                     : {}
                 }
               >
-                {isActive ? (
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                ) : (
-                  getFocusIcon(readingFocus)
-                )}
-                <span>{spread.name}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isActive ? 'bg-black/20' : 'bg-white/10 text-[#9D94B8]'
-                  }`}
-                >
-                  {spread.cardCount}
-                </span>
+                <div className="w-full flex items-center justify-between">
+                  <div
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-sm border shadow-sm"
+                    style={{
+                      backgroundColor: isActive ? `${activeFocusObj.colorHex}40` : 'rgba(255,255,255,0.06)',
+                      borderColor: isActive ? activeFocusObj.colorHex : 'rgba(255,255,255,0.15)',
+                      color: isActive ? activeFocusObj.colorHex : '#F5F3FF',
+                    }}
+                  >
+                    {spread.icon || getSpreadIcon(spread.id, spread.cardCount)}
+                  </div>
+
+                  <span
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border ${
+                      isActive ? 'bg-black/30' : 'bg-white/5 text-[#9D94B8] border-white/10'
+                    }`}
+                    style={isActive ? { borderColor: `${activeFocusObj.colorHex}60`, color: activeFocusObj.colorHex } : {}}
+                  >
+                    {spread.cardCount} {spread.cardCount === 1 ? 'Card' : 'Cards'}
+                  </span>
+                </div>
+
+                <div className="flex flex-col">
+                  <span
+                    className={`text-xs font-bold font-serif line-clamp-1 ${
+                      isActive ? 'text-white' : 'text-[#E2DCF5]'
+                    }`}
+                  >
+                    {spread.name}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-[#9D94B8] line-clamp-1 mt-0.5">
+                    {spread.subtitle}
+                  </span>
+                </div>
               </button>
             );
           })}
@@ -285,10 +334,10 @@ export default function SpreadBoard({
         )}
       </div>
 
-      {/* 4. TAROT DEALING STAGE & SLOTS */}
+      {/* 4. TAROT DEALING STAGE & SLOTS WITH WONDERFUL ICONS ON EACH CARD PLACE */}
       <div
         id="tarot-dealing-stage"
-        className="w-full min-h-[360px] sm:min-h-[420px] rounded-3xl bg-[#16112B]/50 backdrop-blur-xl border p-4 sm:p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl transition-all"
+        className="w-full min-h-[360px] sm:min-h-[440px] rounded-3xl bg-[#16112B]/50 backdrop-blur-xl border p-4 sm:p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-2xl transition-all"
         style={{ borderColor: `${activeFocusObj.colorHex}25` }}
       >
         {isShuffling ? (
@@ -298,29 +347,8 @@ export default function SpreadBoard({
             currentSpread={currentSpread}
           />
         ) : dealtCards.length === 0 ? (
-          /* Empty state prompt */
-          <div className="flex flex-col items-center justify-center gap-3 py-14 text-center max-w-md">
-            <div
-              className="w-16 h-16 rounded-3xl border flex items-center justify-center text-3xl shadow-xl"
-              style={{
-                backgroundColor: `${activeFocusObj.colorHex}15`,
-                borderColor: `${activeFocusObj.colorHex}40`,
-                boxShadow: `0 0 25px ${activeFocusObj.colorHex}30`,
-              }}
-            >
-              {activeFocusObj.icon}
-            </div>
-            <h3 className="font-serif text-lg sm:text-xl font-bold text-[#F5F3FF] mt-1">
-              Ready for {activeFocusObj.name} Reading
-            </h3>
-            <p className="text-xs sm:text-sm text-[#9D94B8] leading-relaxed">
-              Focus on your <strong>{activeFocusObj.colorName} ({activeFocusObj.topic})</strong> intent and tap <strong>Shuffle & Deal</strong> below.
-            </p>
-          </div>
-        ) : (
-          /* Active Dealt Spread Layout */
-          <div className="w-full flex flex-col items-center gap-5">
-            {/* Spread Title Banner */}
+          /* Empty state blueprint preview showing each card reading place with wonderful icons */
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-8 text-center">
             <div className="text-center flex flex-col items-center gap-1">
               <div
                 className="text-xs font-mono uppercase tracking-widest px-3 py-0.5 rounded-full border flex items-center gap-1.5"
@@ -331,29 +359,106 @@ export default function SpreadBoard({
                 }}
               >
                 <span>{activeFocusObj.icon}</span>
-                <span>{activeFocusObj.name} • {currentSpread.name}</span>
+                <span>{currentSpread.name} Blueprint</span>
+              </div>
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-[#F5F3FF] mt-1">
+                {currentSpread.cardCount}-Card {activeFocusObj.name} Spread Places
+              </h3>
+              <p className="text-xs text-[#9D94B8] max-w-md">
+                {currentSpread.subtitle}. Tap <strong>Deal {activeFocusObj.name}</strong> to draw cards into these positions.
+              </p>
+            </div>
+
+            {/* Blueprint Grid of Card Places */}
+            <div
+              className={`w-full flex flex-wrap items-center justify-center gap-3 sm:gap-4 max-w-4xl pt-2 ${
+                currentSpread.cardCount === 6 ? 'sm:grid sm:grid-cols-3' : ''
+              }`}
+            >
+              {currentSpread.slots.map((slot, idx) => (
+                <div
+                  key={slot.id}
+                  className="flex-1 min-w-[130px] sm:min-w-[160px] p-3 rounded-2xl border border-dashed flex flex-col items-center gap-2 text-center transition-all hover:bg-white/5"
+                  style={{
+                    borderColor: `${activeFocusObj.colorHex}40`,
+                    backgroundColor: `${activeFocusObj.colorHex}08`,
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg border shadow-inner"
+                    style={{
+                      backgroundColor: `${activeFocusObj.colorHex}20`,
+                      borderColor: `${activeFocusObj.colorHex}50`,
+                      color: activeFocusObj.colorHex,
+                    }}
+                  >
+                    {slot.icon || '✦'}
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span
+                      className="text-[10px] sm:text-xs font-mono font-bold tracking-wider uppercase"
+                      style={{ color: activeFocusObj.colorHex }}
+                    >
+                      {slot.title}
+                    </span>
+                    <span className="text-[10px] text-[#9D94B8] mt-0.5 line-clamp-1">
+                      {slot.role}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Active Dealt Spread Layout */
+          <div className="w-full flex flex-col items-center gap-5">
+            {/* Spread Title Banner */}
+            <div className="text-center flex flex-col items-center gap-1">
+              <div
+                className="text-xs font-mono uppercase tracking-widest px-3.5 py-1 rounded-full border flex items-center gap-2 shadow-sm"
+                style={{
+                  backgroundColor: `${activeFocusObj.colorHex}15`,
+                  borderColor: `${activeFocusObj.colorHex}40`,
+                  color: activeFocusObj.colorHex,
+                }}
+              >
+                <span className="text-base">{activeFocusObj.icon}</span>
+                <span className="font-bold">{activeFocusObj.name} Focus</span>
+                <span className="opacity-40">•</span>
+                <span>{currentSpread.name}</span>
               </div>
               <p className="text-xs text-[#9D94B8]">{currentSpread.subtitle}</p>
             </div>
 
-            {/* Render Cards in Responsive Grid/Flex */}
-            <div className="w-full flex flex-wrap items-start justify-center gap-4 sm:gap-6 py-2">
+            {/* Render Cards in Responsive Grid/Flex with Wonderful Slot Place Icons */}
+            <div
+              className={`w-full flex flex-wrap items-start justify-center gap-4 sm:gap-6 py-2 ${
+                currentSpread.cardCount === 6 ? 'sm:grid sm:grid-cols-3 max-w-4xl' : ''
+              }`}
+            >
               {dealtCards.map((item, idx) => (
                 <div
                   key={idx}
                   id={`card-slot-${idx}`}
                   className="flex flex-col items-center gap-2.5 animate-in fade-in zoom-in-90 duration-300"
-                  style={{ animationDelay: `${idx * 100}ms` }}
+                  style={{ animationDelay: `${idx * 80}ms` }}
                 >
-                  {/* Position Tag / Role */}
-                  <div className="flex flex-col items-center text-center max-w-[160px]">
-                    <span
-                      className="text-[10px] sm:text-xs font-mono font-bold tracking-[0.25em] uppercase"
-                      style={{ color: activeFocusObj.colorHex }}
+                  {/* Position Tag / Role with Wonderful Slot Icon */}
+                  <div className="flex flex-col items-center text-center max-w-[170px]">
+                    <div
+                      className="px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 shadow-sm"
+                      style={{
+                        backgroundColor: `${activeFocusObj.colorHex}15`,
+                        borderColor: `${activeFocusObj.colorHex}40`,
+                        color: activeFocusObj.colorHex,
+                      }}
                     >
-                      {item.slot.title}
-                    </span>
-                    <span className="text-[10px] text-[#9D94B8] mt-0.5 line-clamp-1">
+                      <span className="text-xs">{item.slot.icon || '✦'}</span>
+                      <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-wider uppercase truncate">
+                        {item.slot.title}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-[#9D94B8] mt-1 line-clamp-1">
                       {item.slot.role}
                     </span>
                   </div>

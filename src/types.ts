@@ -46,6 +46,7 @@ export interface SpreadSlot {
   title: string;
   role: string;
   description: string;
+  icon?: string;
 }
 
 export interface SpreadConfig {
@@ -53,7 +54,8 @@ export interface SpreadConfig {
   name: string;
   subtitle: string;
   cardCount: number;
-  layout: 'single' | 'linear' | 'triangle' | 'five' | 'celtic';
+  layout: 'single' | 'linear' | 'triangle' | 'five' | 'celtic' | 'six' | 'hexagram';
+  icon?: string;
   slots: SpreadSlot[];
 }
 

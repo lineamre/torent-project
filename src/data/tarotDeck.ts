@@ -882,135 +882,176 @@ export const TAROT_DECK: TarotCard[] = [
 export const SPREAD_CONFIGS: SpreadConfig[] = [
   {
     id: 'single',
-    name: 'Nano Oracle Transmission',
-    subtitle: '1-Card Immediate Quantum Insight',
+    name: '1-Card Single Oracle',
+    subtitle: '1-Card Immediate Quantum Insight & Daily Revelation',
     cardCount: 1,
     layout: 'single',
+    icon: '⚡',
     slots: [
       {
         id: 'oracle',
         title: 'Core Quantum Focus',
-        role: 'Present State & Immediate Guidance',
-        description: 'The energetic epicenter of your current question and the most potent action to take right now.'
+        role: 'Present State & Direct Revelation',
+        icon: '⚡',
+        description: 'The energetic epicenter of your current question and the most potent wisdom to act upon right now.'
       }
     ]
   },
   {
     id: 'temporal',
-    name: 'Temporal Continuum',
+    name: '3-Card Temporal Continuum',
     subtitle: '3-Card Past, Present & Emergent Future',
     cardCount: 3,
     layout: 'linear',
+    icon: '⏳',
     slots: [
       {
         id: 'past',
-        title: 'The Origin Seeds',
-        role: 'Past Influences & Subconscious Roots',
-        description: 'The foundational events and mindsets that brought you to this exact juncture.'
+        title: '1. Origin Seeds (Past)',
+        role: 'Past Influences & Karmic Roots',
+        icon: '🌅',
+        description: 'The foundational events, lessons, and mindsets that brought you to this exact juncture.'
       },
       {
         id: 'present',
-        title: 'Current Quantum State',
+        title: '2. Current Nexus (Present)',
         role: 'Active Energy & Real-Time Dynamics',
+        icon: '⚡',
         description: 'The dominant forces, tensions, and opportunities surrounding you in this moment.'
       },
       {
         id: 'future',
-        title: 'Emergent Trajectory',
+        title: '3. Emergent Horizon (Future)',
         role: 'Probable Outcome & Evolving Path',
+        icon: '🌌',
         description: 'The horizon manifesting if you maintain your present vector of consciousness.'
       }
     ]
   },
   {
     id: 'mind-body-spirit',
-    name: 'Tri-Force Alignment',
+    name: '3-Card Tri-Force Alignment',
     subtitle: '3-Card Mind, Body & Spirit Equilibrium',
     cardCount: 3,
     layout: 'triangle',
+    icon: '🔮',
     slots: [
       {
         id: 'mind',
-        title: 'Mind (Intellect & Clarity)',
+        title: '1. Mind (Intellect & Vision)',
         role: 'Conscious Thought & Belief Systems',
+        icon: '🧠',
         description: 'Your mental filters, logic, strategies, and conscious convictions.'
       },
       {
         id: 'body',
-        title: 'Body (Material Reality)',
-        role: 'Physical Actions & Tangible Form',
+        title: '2. Body (Material Form)',
+        role: 'Physical Actions & Tangible Reality',
+        icon: '🌿',
         description: 'Physical health, material assets, somatic sensations, and concrete executions.'
       },
       {
         id: 'spirit',
-        title: 'Spirit (Cosmic Heart)',
+        title: '3. Spirit (Cosmic Heart)',
         role: 'Subconscious Flow & Higher Calling',
+        icon: '✨',
         description: 'Your intuitive compass, soulful desires, and connection to universal source.'
       }
     ]
   },
   {
-    id: 'action-outcome',
-    name: 'Alchemical Catalyst',
-    subtitle: '3-Card Situation, Obstacle & Strategic Key',
-    cardCount: 3,
-    layout: 'linear',
+    id: 'hexagram-6',
+    name: '6-Card Hexagram Matrix',
+    subtitle: '6-Card Deep Continuum: Past, Present, Subconscious, World, Advice & Destiny',
+    cardCount: 6,
+    layout: 'six',
+    icon: '🪐',
     slots: [
       {
-        id: 'situation',
-        title: 'The Core Matrix',
-        role: 'Underlying Situation',
-        description: 'The true nature of what is unfolding beneath external appearances.'
+        id: 'present-core',
+        title: '1. Current Nexus (Present)',
+        role: 'Present Core Dynamic',
+        icon: '⚡',
+        description: 'The central force, real-time energy, and immediate tension dominating your situation.'
       },
       {
-        id: 'obstacle',
-        title: 'The Firewall / Challenge',
-        role: 'Hidden Friction or Resistance',
-        description: 'The internal or external bottleneck testing your resolve.'
+        id: 'past-roots',
+        title: '2. Origin Karma (Past)',
+        role: 'Foundational History & Roots',
+        icon: '🌅',
+        description: 'The karmic roots, learned habits, and past choices shaping this current chapter.'
       },
       {
-        id: 'key',
-        title: 'The Master Key',
-        role: 'Transformational Action',
-        description: 'The exact shift in mindset or strategy that unlocks total victory.'
+        id: 'subconscious',
+        title: '3. Subconscious Depths',
+        role: 'Hidden Desires & Secret Fears',
+        icon: '🌊',
+        description: 'What lies below conscious awareness—deep psychological currents and instinctual drives.'
+      },
+      {
+        id: 'environment',
+        title: '4. External Crucible',
+        role: 'Environment & Outside Forces',
+        icon: '🛡️',
+        description: 'Outside circumstances, key relationships, workplace dynamics, or societal forces.'
+      },
+      {
+        id: 'wisdom-action',
+        title: '5. Alchemical Advice',
+        role: 'Optimal Strategic Action',
+        icon: '🔑',
+        description: 'The most empowered mindset, decisive action, or wisdom to navigate forward.'
+      },
+      {
+        id: 'destiny-outcome',
+        title: '6. Destiny Culmination',
+        role: 'Synthesized Outcome & Destiny',
+        icon: '👑',
+        description: 'The ultimate resolution, spiritual evolution, and destiny trajectory of your path.'
       }
     ]
   },
   {
     id: 'celtic',
-    name: 'Celtic Quantum Cross',
-    subtitle: '5-Card Deep Dimensional Reading',
+    name: '5-Card Quantum Cross',
+    subtitle: '5-Card Deep Dimensional Dimensional Portal',
     cardCount: 5,
     layout: 'five',
+    icon: '✨',
     slots: [
       {
         id: 'heart',
         title: '1. The Core Essence',
         role: 'The Question Heart',
+        icon: '🎯',
         description: 'The foundational energy at the center of the question.'
       },
       {
         id: 'crossing',
         title: '2. The Crossing Force',
         role: 'Primary Catalyst / Conflict',
+        icon: '⚔️',
         description: 'What challenges, tests, or catalyses this situation.'
       },
       {
         id: 'subconscious',
         title: '3. Hidden Sub-Routines',
         role: 'Subconscious / Deep Roots',
+        icon: '🌊',
         description: 'Underlying psychological patterns operating in the dark.'
       },
       {
         id: 'conscious',
         title: '4. Conscious Ideal',
         role: 'Hopes & Highest Aspirations',
+        icon: '🌟',
         description: 'What you consciously seek or perceive as the ideal goal.'
       },
       {
         id: 'culmination',
         title: '5. Quantum Synthesis',
         role: 'The Integrated Destiny',
+        icon: '👑',
         description: 'The transcendent integration and final outcome of this path.'
       }
     ]

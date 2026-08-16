@@ -148,13 +148,20 @@ export default function CardReadingPopout({
 
         {/* Position Meaning Focus Badge */}
         <div className="p-3 rounded-2xl bg-gradient-to-r from-[#FFE600]/15 via-[#1A1238] to-[#00F2FE]/10 border border-[#FFE600]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#FFE600] font-bold">
-              {isTagalog ? `Posisyon: ${tagalogSlotTitle}` : `Position: ${slot.title}`}
-            </span>
-            <p className="text-xs text-[#D1CBE8] font-serif italic mt-0.5">
-              {isTagalog ? tagalogSlotRole : slot.role}
-            </p>
+          <div className="flex items-center gap-2.5">
+            {slot.icon && (
+              <span className="text-xl p-2 rounded-xl bg-white/10 border border-white/15">
+                {slot.icon}
+              </span>
+            )}
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#FFE600] font-bold">
+                {isTagalog ? `Posisyon: ${tagalogSlotTitle}` : `Position: ${slot.title}`}
+              </span>
+              <p className="text-xs text-[#D1CBE8] font-serif italic mt-0.5">
+                {isTagalog ? tagalogSlotRole : slot.role}
+              </p>
+            </div>
           </div>
           {question && (
             <div className="text-[11px] text-[#9D94B8] bg-black/40 px-2.5 py-1 rounded-xl border border-white/10 max-w-xs truncate">

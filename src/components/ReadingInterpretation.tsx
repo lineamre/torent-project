@@ -523,8 +523,9 @@ export default function ReadingInterpretation({
                   <div>
                     {/* Position and Orientation */}
                     <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="font-mono text-[#FFE600] font-bold uppercase tracking-wider">
-                        {item.slot.title}
+                      <span className="font-mono text-[#FFE600] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                        {item.slot.icon && <span>{item.slot.icon}</span>}
+                        <span>{item.slot.title}</span>
                       </span>
                       <span
                         className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
