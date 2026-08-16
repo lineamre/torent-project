@@ -1,0 +1,8 @@
+{
+  "name": "Remix Nano Banana Neo-Arcana Tarot",
+  "description": "A cyber-mystic tarot reading application featuring Google sign-in authentication, personal user accounts with Firestore database structured records, 3D card deck interactions, multiple spreads, procedural cosmic audio, deck encyclopedia, reading journal, and AI Oracle synthesis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

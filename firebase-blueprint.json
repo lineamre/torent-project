@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "UserProfile": {
+      "collectionName": "users",
+      "fields": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "description": "User Google/Gmail address" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "photoURL": { "type": "string", "description": "Google Profile picture URL" },
+        "createdAt": { "type": "number", "description": "Account creation timestamp" },
+        "lastLoginAt": { "type": "number", "description": "Last sign-in timestamp" },
+        "preferences": {
+          "type": "object",
+          "description": "User customized theme, language, and audio preferences"
+        },
+        "stats": {
+          "type": "object",
+          "description": "User reading stats and counts"
+        }
+      }
+    },
+    "TarotReading": {
+      "collectionName": "users/{userId}/readings",
+      "fields": {
+        "id": { "type": "string", "description": "Unique reading record ID" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "timestamp": { "type": "number", "description": "Reading creation timestamp" },
+        "question": { "type": "string", "description": "User inquiry or question" },
+        "spreadId": { "type": "string", "description": "Spread configuration identifier" },
+        "spreadName": { "type": "string", "description": "Display name of spread layout" },
+        "cards": { "type": "array", "description": "Dealt cards with positions and orientations" },
+        "aiInterpretation": { "type": "string", "description": "Synthesized AI Oracle reading" },
+        "userNotes": { "type": "string", "description": "Personal reflection notes" },
+        "tags": { "type": "array", "description": "Categorization tags" }
+      }
+    },
+    "DailyDraw": {
+      "collectionName": "users/{userId}/daily_draws",
+      "fields": {
+        "id": { "type": "string", "description": "Date string YYYY-MM-DD" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "date": { "type": "string", "description": "Calendar date" },
+        "timestamp": { "type": "number", "description": "Timestamp drawn" },
+        "cardId": { "type": "number", "description": "Tarot card ID" },
+        "cardName": { "type": "string", "description": "Tarot card name" },
+        "isReversed": { "type": "boolean", "description": "Card orientation" },
+        "userNotes": { "type": "string", "description": "User personal daily thoughts" }
+      }
+    }
+  }
+}

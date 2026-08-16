@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    color: #F5F3FF;
+    background-color: #080612;
+  }
+  
+  h1, h2, h3, .font-serif {
+    font-family: 'Cinzel Decorative', 'Cinzel', Georgia, serif;
+  }
+}
+
+/* Custom glowing cyber scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(8, 6, 18, 0.9);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 230, 0, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 230, 0, 0.7);
+}
+
