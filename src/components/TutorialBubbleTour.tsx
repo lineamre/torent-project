@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Sparkles,
   ArrowRight,
@@ -30,8 +30,10 @@ interface SpotlightTarget {
   clickInstructionEn: string;
   clickInstructionTl: string;
   targetId: string;
+  fallbackTargetId?: string;
   color: string;
-  radiusPadding: number;
+  padding: { x: number; y: number };
+  borderRadius: number;
 }
 
 interface TutorialBubbleTourProps {
@@ -48,6 +50,14 @@ interface TutorialBubbleTourProps {
   onOpenPopoutSample?: () => void;
 }
 
+interface RectPos {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rx: number;
+}
+
 export default function TutorialBubbleTour({
   isOpen,
   onClose,
@@ -61,13 +71,9 @@ export default function TutorialBubbleTour({
   onRevealSample,
 }: TutorialBubbleTourProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [spotlightPos, setSpotlightPos] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    radius: number;
-  } | null>(null);
+  const [spotlightRect, setSpotlightRect] = useState<RectPos | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastScrolledStepRef = useRef<number>(-1);
 
   const steps: SpotlightTarget[] = useMemo(
     () => [
@@ -81,11 +87,12 @@ export default function TutorialBubbleTour({
           'Tap any color you like! ❤️ Red is for Love, 🧭 Blue is for Tomorrow, 🛡️ Black is for Life, and 💰 Gold is for Coins!',
         easyDescTl:
           'Pindutin ang kulay na gusto mo! ❤️ Pula para sa Pag-ibig, 🧭 Asul para sa Bukas, 🛡️ Itim para sa Buhay, at 💰 Ginto para sa Suwerte!',
-        clickInstructionEn: '👇 TAP THIS GLOWING CIRCLE!',
-        clickInstructionTl: '👇 PINDUTIN ANG NAKAIILAW NA BILOG!',
+        clickInstructionEn: '👇 TAP THIS COLOR BOX!',
+        clickInstructionTl: '👇 PINDUTIN ANG KULAY NA ITO!',
         targetId: 'focus-select-btn-love',
         color: '#FF2A6D',
-        radiusPadding: 32,
+        padding: { x: 8, y: 8 },
+        borderRadius: 20,
       },
       {
         id: 'step-spread',
@@ -97,11 +104,12 @@ export default function TutorialBubbleTour({
           'Pick how many cards to play: 1 Card for quick magic ⚡, 3 Cards for Yesterday, Today & Tomorrow ⏳, or 6 Cards for everything 🔮!',
         easyDescTl:
           'Piliin kung ilang baraha: 1 Baraha para sa mabilis na sagot ⚡, o 3 Baraha para sa Kahapon, Ngayon at Bukas ⏳!',
-        clickInstructionEn: '👇 TAP THIS CIRCLE TO PICK CARDS!',
-        clickInstructionTl: '👇 PINDUTIN PARA PUMILI NG BARAHA!',
+        clickInstructionEn: '👇 TAP TO PICK 3 CARDS!',
+        clickInstructionTl: '👇 PINDUTIN PARA SA 3 BARAHA!',
         targetId: 'spread-select-temporal_3',
         color: '#00F2FE',
-        radiusPadding: 28,
+        padding: { x: 8, y: 8 },
+        borderRadius: 20,
       },
       {
         id: 'step-question',
@@ -117,7 +125,8 @@ export default function TutorialBubbleTour({
         clickInstructionTl: '👇 PINDUTIN ANG KAHON NG TANONG!',
         targetId: 'focus-question-input',
         color: '#FFE600',
-        radiusPadding: 26,
+        padding: { x: 8, y: 8 },
+        borderRadius: 20,
       },
       {
         id: 'step-deal',
@@ -133,7 +142,8 @@ export default function TutorialBubbleTour({
         clickInstructionTl: '👇 PINDUTIN ANG "DEAL CARDS" DITO!',
         targetId: 'shuffle-and-deal-btn',
         color: '#A855F7',
-        radiusPadding: 32,
+        padding: { x: 8, y: 8 },
+        borderRadius: 22,
       },
       {
         id: 'step-flip',
@@ -146,10 +156,12 @@ export default function TutorialBubbleTour({
         easyDescTl:
           'Pindutin ang nakataob na baraha sa mesa upang baligtarin ito at makita ang sikretong larawan!',
         clickInstructionEn: '👇 TAP THE CARD TO FLIP!',
-        clickInstructionTl: '👇 PINDUTIN ANG BARAHA!',
-        targetId: 'tarot-dealing-stage',
+        clickInstructionTl: '👇 PINDUTIN ANG BARAHA PARA BUKSAN!',
+        targetId: 'card-slot-0',
+        fallbackTargetId: 'tarot-dealing-stage',
         color: '#10B981',
-        radiusPadding: 45,
+        padding: { x: 8, y: 8 },
+        borderRadius: 24,
       },
       {
         id: 'step-complete',
@@ -165,7 +177,8 @@ export default function TutorialBubbleTour({
         clickInstructionTl: '🚀 PINDUTIN PARA MAGSIMULA!',
         targetId: '',
         color: '#FFE600',
-        radiusPadding: 50,
+        padding: { x: 20, y: 20 },
+        borderRadius: 30,
       },
     ],
     []
@@ -174,75 +187,84 @@ export default function TutorialBubbleTour({
   const currentStep = steps[currentStepIndex];
   const isFinalStep = currentStepIndex === steps.length - 1;
 
-  // Measure and follow the target element position
-  const updateSpotlight = useCallback(() => {
+  // Measure and track the target element smoothly in real time
+  const measureTarget = useCallback(() => {
     if (!isOpen) return;
 
     if (!currentStep.targetId) {
-      // Center screen for final celebration
-      setSpotlightPos({
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-        width: 140,
-        height: 140,
-        radius: 80,
-      });
+      // Final celebration centered
+      setSpotlightRect(null);
       return;
     }
 
-    const el = document.getElementById(currentStep.targetId);
+    let el = document.getElementById(currentStep.targetId);
+    if (!el && currentStep.fallbackTargetId) {
+      el = document.getElementById(currentStep.fallbackTargetId);
+    }
+
     if (el) {
       const rect = el.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const maxDim = Math.max(rect.width, rect.height);
-      const radius = Math.max(maxDim / 2 + currentStep.radiusPadding, 48);
+      const padX = currentStep.padding.x;
+      const padY = currentStep.padding.y;
 
-      setSpotlightPos({
-        x: centerX,
-        y: centerY,
-        width: rect.width,
-        height: rect.height,
-        radius,
-      });
+      const newPos: RectPos = {
+        x: Math.max(4, rect.left - padX),
+        y: Math.max(4, rect.top - padY),
+        width: rect.width + padX * 2,
+        height: rect.height + padY * 2,
+        rx: currentStep.borderRadius,
+      };
 
-      // Smooth scroll if target is partially offscreen
-      if (
-        rect.top < 60 ||
-        rect.bottom > window.innerHeight - 60 ||
-        rect.left < 20 ||
-        rect.right > window.innerWidth - 20
-      ) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setSpotlightRect(newPos);
+
+      // Smooth scroll if element changed step and is off-screen
+      if (lastScrolledStepRef.current !== currentStepIndex) {
+        lastScrolledStepRef.current = currentStepIndex;
+        if (
+          rect.top < 80 ||
+          rect.bottom > window.innerHeight - 80 ||
+          rect.left < 20 ||
+          rect.right > window.innerWidth - 20
+        ) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }
     } else {
-      // Fallback center
-      setSpotlightPos({
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 2,
-        width: 120,
-        height: 120,
-        radius: 70,
+      // Fallback center box
+      setSpotlightRect({
+        x: window.innerWidth / 2 - 140,
+        y: window.innerHeight / 2 - 80,
+        width: 280,
+        height: 160,
+        rx: 24,
       });
     }
-  }, [isOpen, currentStep]);
+  }, [isOpen, currentStep, currentStepIndex]);
 
+  // Continuous animation frame loop to follow scrolling and animations with zero lag
   useEffect(() => {
-    updateSpotlight();
-    window.addEventListener('resize', updateSpotlight);
-    window.addEventListener('scroll', updateSpotlight, true);
+    if (!isOpen) return;
 
-    const timer = setTimeout(updateSpotlight, 150);
-    return () => {
-      window.removeEventListener('resize', updateSpotlight);
-      window.removeEventListener('scroll', updateSpotlight, true);
-      clearTimeout(timer);
+    let isMounted = true;
+    const loop = () => {
+      if (!isMounted) return;
+      measureTarget();
+      rafRef.current = requestAnimationFrame(loop);
     };
-  }, [updateSpotlight]);
+
+    loop();
+
+    return () => {
+      isMounted = false;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, [isOpen, measureTarget]);
 
   if (!isOpen) return null;
 
-  // Handle clicking the target circle or action
+  // Handle clicking the target or action
   const handleSpotlightClick = () => {
     haptic.tick();
     sound.playSparkle();
@@ -281,10 +303,13 @@ export default function TutorialBubbleTour({
     }
   };
 
-  // Determine speech bubble placement so it doesn't overlap the circle
+  // Determine speech bubble placement so it never blocks the target
   const bubblePlacement = () => {
-    if (!spotlightPos || isFinalStep) return 'center';
-    if (spotlightPos.y > window.innerHeight * 0.55) {
+    if (!spotlightRect || isFinalStep) return 'center';
+    const bottomSpace = window.innerHeight - (spotlightRect.y + spotlightRect.height);
+    const topSpace = spotlightRect.y;
+
+    if (bottomSpace < 260 && topSpace > 240) {
       return 'top';
     }
     return 'bottom';
@@ -297,94 +322,109 @@ export default function TutorialBubbleTour({
       id="tour-spotlight-overlay"
       className="fixed inset-0 z-[9999] overflow-hidden select-none"
     >
-      {/* 1. DARK SCREEN WITH CIRCLE HOLE (SVG MASK SPOTLIGHT) */}
+      {/* 1. DARK SCREEN WITH LASER-PRECISE CUTOUT MASK */}
       <svg
-        className="fixed inset-0 w-full h-full pointer-events-none transition-all duration-300 ease-out"
+        className="fixed inset-0 w-full h-full pointer-events-none transition-all duration-200 ease-out"
         style={{ zIndex: 9990 }}
       >
         <defs>
           <mask id="spotlight-cutout-mask">
             {/* Opaque white covers the entire screen */}
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
-            {/* Black circle cuts a transparent hole right onto the target element */}
-            {spotlightPos && (
-              <circle
-                cx={spotlightPos.x}
-                cy={spotlightPos.y}
-                r={spotlightPos.radius}
+            {/* Cutout hole precisely shaped to target button or card */}
+            {spotlightRect && (
+              <rect
+                x={spotlightRect.x}
+                y={spotlightRect.y}
+                width={spotlightRect.width}
+                height={spotlightRect.height}
+                rx={spotlightRect.rx}
+                ry={spotlightRect.rx}
                 fill="black"
-                className="transition-all duration-300 ease-out"
               />
             )}
           </mask>
         </defs>
 
-        {/* 90% Dark backdrop with transparent circle hole */}
+        {/* 88% Dark backdrop with exact cutout window */}
         <rect
           x="0"
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(4, 2, 10, 0.90)"
+          fill="rgba(5, 3, 15, 0.88)"
           mask="url(#spotlight-cutout-mask)"
         />
       </svg>
 
-      {/* 2. GLOWING PULSING CIRCLE RING AROUND THE HOLE (CLICKABLE TARGET) */}
-      {spotlightPos && !isFinalStep && (
+      {/* 2. GLOWING PULSING BEACON TARGET AROUND THE CUTOUT */}
+      {spotlightRect && !isFinalStep && (
         <div
-          id="spotlight-interactive-circle-target"
+          id="spotlight-interactive-target-frame"
           onClick={handleSpotlightClick}
-          className="fixed rounded-full cursor-pointer transition-all duration-300 ease-out flex items-center justify-center group"
+          className="fixed cursor-pointer transition-all duration-150 ease-out flex items-center justify-center group pointer-events-auto"
           style={{
-            left: `${spotlightPos.x - spotlightPos.radius}px`,
-            top: `${spotlightPos.y - spotlightPos.radius}px`,
-            width: `${spotlightPos.radius * 2}px`,
-            height: `${spotlightPos.radius * 2}px`,
+            left: `${spotlightRect.x}px`,
+            top: `${spotlightRect.y}px`,
+            width: `${spotlightRect.width}px`,
+            height: `${spotlightRect.height}px`,
+            borderRadius: `${spotlightRect.rx}px`,
             zIndex: 9995,
           }}
-          title="Click this glowing circle to continue!"
+          title="Click here to continue!"
         >
-          {/* Animated beacon pulses */}
+          {/* Animated ping aura */}
           <div
-            className="absolute inset-0 rounded-full animate-ping opacity-60 pointer-events-none"
+            className="absolute inset-0 rounded-[inherit] animate-ping opacity-50 pointer-events-none"
             style={{ backgroundColor: currentStep.color }}
           />
+
+          {/* Animated glowing border ring */}
           <div
-            className="absolute -inset-2 rounded-full border-4 border-dashed animate-spin pointer-events-none opacity-80"
+            className="absolute inset-0 rounded-[inherit] border-3 shadow-2xl transition-transform group-hover:scale-[1.02] group-active:scale-[0.98]"
             style={{
               borderColor: currentStep.color,
-              animationDuration: '8s',
-            }}
-          />
-          {/* Glowing border ring */}
-          <div
-            className="absolute inset-0 rounded-full border-4 shadow-2xl transition-transform group-hover:scale-105 group-active:scale-95"
-            style={{
-              borderColor: currentStep.color,
-              boxShadow: `0 0 45px ${currentStep.color}, inset 0 0 25px ${currentStep.color}60`,
+              boxShadow: `0 0 35px ${currentStep.color}, inset 0 0 20px ${currentStep.color}40`,
             }}
           />
 
-          {/* Floating animated hand icon pointing to click */}
+          {/* Floating animated hand pointer & label */}
           <div
-            className="absolute -bottom-14 left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 pointer-events-none animate-bounce"
+            className={`absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 pointer-events-none animate-bounce ${
+              spotlightRect.y > window.innerHeight - 200 ? '-top-14' : '-bottom-14'
+            }`}
             style={{ zIndex: 9998 }}
           >
-            <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(255,230,0,0.8)]">
-              👆
-            </span>
-            <span
-              className="text-[11px] sm:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-2xl text-black border-2 border-white whitespace-nowrap"
-              style={{ backgroundColor: currentStep.color }}
-            >
-              {appLanguage === 'tl' ? currentStep.clickInstructionTl : currentStep.clickInstructionEn}
-            </span>
+            {spotlightRect.y > window.innerHeight - 200 ? (
+              <>
+                <span
+                  className="text-[11px] sm:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-2xl text-black border-2 border-white whitespace-nowrap"
+                  style={{ backgroundColor: currentStep.color }}
+                >
+                  {appLanguage === 'tl' ? currentStep.clickInstructionTl : currentStep.clickInstructionEn}
+                </span>
+                <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(255,230,0,0.8)]">
+                  👇
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(255,230,0,0.8)]">
+                  👆
+                </span>
+                <span
+                  className="text-[11px] sm:text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-2xl text-black border-2 border-white whitespace-nowrap"
+                  style={{ backgroundColor: currentStep.color }}
+                >
+                  {appLanguage === 'tl' ? currentStep.clickInstructionTl : currentStep.clickInstructionEn}
+                </span>
+              </>
+            )}
           </div>
         </div>
       )}
 
-      {/* 3. TOP SIMPLE BAR (STEP COUNTER & EASY EXIT) */}
+      {/* 3. TOP PROGRESS HEADER */}
       <div className="fixed top-3 left-1/2 -translate-x-1/2 z-[9999] w-11/12 max-w-md bg-[#16112B]/95 border border-[#FFE600]/40 rounded-2xl px-3.5 py-2 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="text-lg animate-bounce">{currentStep.emoji}</span>
@@ -395,7 +435,7 @@ export default function TutorialBubbleTour({
                 : `Step ${currentStep.stepNumber} of ${steps.length}`}
             </span>
             <span className="text-[9px] text-[#D1CBE8] font-mono">
-              {appLanguage === 'tl' ? 'Pindutin ang bilog para magpatuloy!' : 'Click the glowing circle to learn!'}
+              {appLanguage === 'tl' ? 'Pindutin ang nakaiilaw na kahon para matuto!' : 'Click the glowing frame to continue!'}
             </span>
           </div>
         </div>
@@ -417,7 +457,7 @@ export default function TutorialBubbleTour({
       {/* 4. SUPER EASY 6-YEAR-OLD FRIENDLY SPEECH BUBBLE */}
       <div
         id="easy-tour-speech-bubble"
-        className={`fixed z-50 left-1/2 -translate-x-1/2 w-11/12 max-w-md transition-all duration-300 ${
+        className={`fixed z-[9999] left-1/2 -translate-x-1/2 w-11/12 max-w-md transition-all duration-200 ${
           isFinalStep || placement === 'center'
             ? 'top-1/2 -translate-y-1/2'
             : placement === 'top'
@@ -459,7 +499,7 @@ export default function TutorialBubbleTour({
             {appLanguage === 'tl' ? currentStep.easyDescTl : currentStep.easyDescEn}
           </div>
 
-          {/* Big Action Button (Click circle or click this button!) */}
+          {/* Big Action Button (Click target or click this button!) */}
           <div className="flex items-center justify-between gap-2 pt-1">
             {currentStepIndex > 0 && !isFinalStep && (
               <button
